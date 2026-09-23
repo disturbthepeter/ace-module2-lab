@@ -178,7 +178,7 @@ jobs:
             sleep 10
             for attempt in 1 2 3 4 5; do
               echo "Attempt $attempt for $FID..."
-              cm fix "$FID" -y --bypass-warning 2>&1 | tee "$RUNNER_TEMP/fix-$FID.cm.log" || true
+              cm --bypass-warning fix "$FID" -y 2>&1 | tee "$RUNNER_TEMP/fix-$FID.cm.log" || true
               if ! grep -q "429" "$RUNNER_TEMP/fix-$FID.cm.log"; then
                 break
               fi
