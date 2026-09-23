@@ -175,7 +175,16 @@ jobs:
             # --bypass-warning: cm 0.2.0's responsibility warning must be
             # acknowledged interactively once per machine; CI runners are
             # fresh every run, so the session dies before fixing without it.
-            cm fix "$FID" -y --bypass-warning 2>&1 | tee "$RUNNER_TEMP/fix-$FID.cm.log" || true
+            sleep 10
+            for attempt in 1 2 3 4 5; do
+              echo "Attempt $attempt for $FID..."
+              cm fix "$FID" -y --bypass-warning 2>&1 | tee "$RUNNER_TEMP/fix-$FID.cm.log" || true
+              if ! grep -q "429" "$RUNNER_TEMP/fix-$FID.cm.log"; then
+                break
+              fi
+              echo "429 Rate limit encountered. Sleeping 20 seconds before attempt $((attempt+1))..."
+              sleep 20
+            done
             # In a non-interactive CI shell, `cm fix` reliably PRINTS the patch but
             # may not write it (its "Apply these changes? [y/N]" prompt reads EOF).
             # Extract the printed diff and apply it ONLY if it applies cleanly — so
