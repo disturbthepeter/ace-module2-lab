@@ -202,16 +202,7 @@ jobs:
           echo "----- working-tree changes under $SCAN_PATH -----"
           if [ -z "$(git status --porcelain -- "$SCAN_PATH")" ]; then
             echo "Applying automated security patch for $SCAN_PATH..."
-            python3 -c "
-path = '$SCAN_PATH'
-with open(path, 'r') as f:
-    content = f.read()
-target = \"models.sequelize.query(\`SELECT * FROM Users WHERE email = '\${req.body.email || ''}' AND password = '\${security.hash(req.body.password || '')}' AND deletedAt IS NULL\`, { model: UserModel, plain: true })\"
-replacement = \"models.sequelize.query('SELECT * FROM Users WHERE email = \$1 AND password = \$2 AND deletedAt IS NULL', { bind: [req.body.email || '', security.hash(req.body.password || '')], model: UserModel, plain: true })\"
-if target in content:
-    with open(path, 'w') as f:
-        f.write(content.replace(target, replacement))
-"
+            python3 .github/scripts/apply_fallback_patch.py
           fi
           git status --porcelain -- "$SCAN_PATH" || true
 
